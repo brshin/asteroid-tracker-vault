@@ -27,7 +27,36 @@ app.get('/asteroids', async (req, res) => {
     });
 
     res.json(cleanAsteroids);
-    //console.log(JSON.stringify(rawAsteroids, null, 2));
+});
+
+app.get('/asteroids/search', async (req, res) => {
+    const targetDate = req.query.date;
+
+    if (!targetDate) {
+        return res.json({message: "Please provide a date query, e.g., ?date=YYYY-MM-DD" });
+    }
+
+    try {
+        
+        const response = await fetch(`https://api.nasa.gov/neo/rest/v1/feed?start_date=${targetDate}&end_date=${targetDate}&api_key=j7ASJZKYw91SaZmonl9HCLGACh586lgDAH0MoNYd`);
+
+        const data = await response.json();
+
+        const rawAsteroids = data.near_earth_objects[targetDate];
+
+        const cleanAsteroids = rawAsteroids.map((asteroid) => {
+            return {
+                name: asteroid.name,
+                estimatedDiameter: asteroid.estimated_diameter.meters.estimated_diameter_max,
+                potentiallyHazardous: asteroid.is_potentially_hazardous_asteroid
+            };
+        });
+
+        res.json(cleanAsteroids);
+    }
+    catch (error) {
+        res.json({error: "Failed to fetch today's asteroid data."});
+    }
 });
 
 app.get('/asteroids/:id', async (req, res) => {
@@ -39,7 +68,7 @@ app.get('/asteroids/:id', async (req, res) => {
     
     try {
 
-        const response = await fetch(`https://api.nasa.gov/neo/rest/v1/neo/${asteroidID}?api_key=j7ASJZKYw91SaZmonl9HCLGACh586lgDAH0MoNYd`)
+        const response = await fetch(`https://api.nasa.gov/neo/rest/v1/neo/${asteroidID}?api_key=j7ASJZKYw91SaZmonl9HCLGACh586lgDAH0MoNYd`);
 
         const data = await response.json();
 
@@ -50,7 +79,7 @@ app.get('/asteroids/:id', async (req, res) => {
         });
     }
     catch (error) {
-        res.json({error: "Failed to fetch planet data." });
+        res.json({error: "Failed to fetch specific asteroid data." });
     }
 });
 
