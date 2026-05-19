@@ -39,6 +39,19 @@ function App() {
         .catch(err => console.error("Failed to add:", err));
     };
 
+    const handleRemoveAsteroid = (asteroidName) => {
+        fetch(`http://localhost:3000/asteroids/favorites/${asteroidName}`, {
+            method: 'DELETE',
+        })
+        .then(res => res.json())
+        .then(data => {
+            console.log(data.message);
+
+            setFavorites(favorites => favorites.filter(ast => ast.name !== asteroidName));
+        })
+        .catch(err => console.error("Error removing:", err));
+    };
+
     return (
         <div>
             <h1>Asteroid Dashboard</h1>
@@ -61,6 +74,9 @@ function App() {
             {favorites.map((asteroid) => (
                 <div key={asteroid.name}>
                     <h2>{asteroid.name}</h2>
+                    <button onClick={() => handleRemoveAsteroid(asteroid.name)}>
+                        Remove
+                    </button>
                 </div>
             ))}
 
