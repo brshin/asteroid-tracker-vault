@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 function App() {
     const [asteroids, setAsteroids] = useState([]);
     const [favorites, setFavorites] = useState([]);
 
     useEffect(() => {
-        fetch('http://localhost:3000/asteroids')
+        fetch(`${API_BASE_URL}/asteroids`)
             .then(res => res.json())
             .then(data => {
                 console.log("Data from backend (asteroids):", data);
@@ -13,7 +15,7 @@ function App() {
             })
             .catch(err => console.error("Network error:", err));
         
-        fetch('http://localhost:3000/asteroids/favorites')
+        fetch(`${API_BASE_URL}/asteroids/favorites`)
             .then(res => res.json())
             .then(data => {
                 console.log("Data from backend (favorites):", data);
@@ -23,7 +25,7 @@ function App() {
     }, []);
 
     const handleSaveAsteroid = (asteroid) => {
-        fetch('http://localhost:3000/asteroids/favorites', {
+        fetch(`${API_BASE_URL}/asteroids/favorites`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -40,7 +42,7 @@ function App() {
     };
 
     const handleRemoveAsteroid = (asteroidName) => {
-        fetch(`http://localhost:3000/asteroids/favorites/${asteroidName}`, {
+        fetch(`${API_BASE_URL}/asteroids/favorites/${asteroidName}`, {
             method: 'DELETE',
         })
         .then(res => res.json())
