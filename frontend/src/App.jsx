@@ -16,12 +16,20 @@ function App() {
             .catch(err => console.error("Network error:", err));
         
         fetch(`${API_BASE_URL}/asteroids/favorites`)
-            .then(res => res.json())
+            .then(async (res) => {
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.message || "Failed to fetch favorites");
+                }
+                return data;
+            })
             .then(data => {
                 console.log("Data from backend (favorites):", data);
                 setFavorites(data);
             })
             .catch(err => console.error("Network error:", err));
+            alert(err.message);
     }, []);
 
     const handleSaveAsteroid = (asteroid) => {
