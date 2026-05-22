@@ -23,8 +23,6 @@ app.get('/asteroids/favorites', async (req, res) => {
     catch (err) {
         res.status(500).json({ message: "Error fetching from database", error: err});
     }
-
-    //res.json(favoriteAsteroids);
 });
 
 app.put('/asteroids/favorites/:name', (req, res) => {
@@ -47,15 +45,21 @@ app.put('/asteroids/favorites/:name', (req, res) => {
 
 });
 
-app.delete('/asteroids/favorites/:name', (req, res) => {
-    const asteroidName = req.params.name;
+app.delete('/asteroids/favorites/:name', async (req, res) => {
+    const { name } = req.params;
 
-    favoriteAsteroids = favoriteAsteroids.filter(asteroid => asteroid.name !== asteroidName);
+    try {
+        const result = await Asteroid.deleteOne({ name: name});
 
-    res.json({
-        message: `Successful deletion of asteroid ${asteroidName}.`,
-        updatedArray: favoriteAsteroids
-    });
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ message: "Asteroid not found in your database!" });
+        }
+
+        res.status(200).json({ message: "Successfully removed from the database." });
+    }
+    catch (err) {
+        res.status(500).json({ message: "Error deleting from database", error: err });
+    }
 });
 
 app.post('/asteroids/favorites', async (req, res) => {

@@ -28,8 +28,10 @@ function App() {
                 console.log("Data from backend (favorites):", data);
                 setFavorites(data);
             })
-            .catch(err => console.error("Network error:", err));
-            alert(err.message);
+            .catch(err => {
+                console.error("Network error:", err);
+                alert(err.message);
+            });
     }, []);
 
     const handleSaveAsteroid = (asteroid) => {
@@ -64,13 +66,24 @@ function App() {
         fetch(`${API_BASE_URL}/asteroids/favorites/${asteroidName}`, {
             method: 'DELETE',
         })
-        .then(res => res.json())
+        .then(async (res) => {
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.message || "Failed to delete asteroid");
+            }
+            return data;
+        })
         .then(data => {
-            console.log(data.message);
+            console.log("Success! Server says:", data.message);
 
             setFavorites(favorites => favorites.filter(ast => ast.name !== asteroidName));
         })
-        .catch(err => console.error("Error removing:", err));
+        .catch(err => {
+            console.error("Error removing:", err.message);
+            alert(err.message);
+        });
+            
     };
 
     return (
