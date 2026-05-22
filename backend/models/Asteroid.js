@@ -1,0 +1,15 @@
+const mongoose = require('mongoose');
+
+const asteroidSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    potentiallyHazardous: {
+        type: Boolean,
+        required: true
+    }
+});
+
+module.exports = mongoose.model('Asteroid', asteroidSchema);

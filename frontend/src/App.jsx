@@ -35,10 +35,21 @@ function App() {
                 potentiallyHazardous: asteroid.potentiallyHazardous
             })
         })
-        .then(res => res.json())
+        .then(async (res) => {
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.message);
+            }
+
+            return data;
+        })
         .then(data => console.log("Success! Server says: ", data))
-        .then(setFavorites(prevFavorites => [...prevFavorites, asteroid]))
-        .catch(err => console.error("Failed to add:", err));
+        .then(() => setFavorites(prevFavorites => [...prevFavorites, asteroid]))
+        .catch(err => {
+            console.error("Failed to add:", err);
+            alert(err.message);
+        });
     };
 
     const handleRemoveAsteroid = (asteroidName) => {

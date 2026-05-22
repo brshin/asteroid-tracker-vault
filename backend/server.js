@@ -1,5 +1,11 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
+
+const mongoose = require('mongoose');
+
+const Asteroid = require('./models/Asteroid');
 
 const app = express();
 const PORT = 3000;
@@ -9,8 +15,16 @@ app.use(express.json());
 
 let favoriteAsteroids = [];
 
-app.get('/asteroids/favorites', (req, res) => {
-    res.json(favoriteAsteroids);
+app.get('/asteroids/favorites', async (req, res) => {
+    try {
+        const favorites = await Asteroid.find();
+        res.status(200).json(favorites);
+    }
+    catch (err) {
+        res.status(500).json({ message: "Error fetching from database", error: err});
+    }
+
+    //res.json(favoriteAsteroids);
 });
 
 app.put('/asteroids/favorites/:name', (req, res) => {
@@ -44,14 +58,31 @@ app.delete('/asteroids/favorites/:name', (req, res) => {
     });
 });
 
-app.post('/asteroids/favorites', (req, res) => {
-    const favoriteAsteroid = req.body;
+app.post('/asteroids/favorites', async (req, res) => {
+    const { name, potentiallyHazardous } = req.body;
 
-    if (!favoriteAsteroid) {
-        return res.json({message: "No favorite asteroid data provided."});
+    if (!name) {
+        return res.status(400).json({message: "No favorite asteroid data provided."});
     }
 
-    favoriteAsteroids.push(favoriteAsteroid);
+    try {
+        const newFavorite = new Asteroid({
+             name: name,
+             potentiallyHazardous: potentiallyHazardous
+            });
+
+        await newFavorite.save();
+
+        res.status(201).json(newFavorite);
+    }
+    catch (err) {
+        if (err.code === 11000) {
+            return res.status(400).json({ message: "Asteroid already favorited!" });
+        }
+        res.status(500).json({ message: "Error saving to database", error: err});
+    }
+
+    //favoriteAsteroids.push(favoriteAsteroid);
 
     res.json({
         message: `${favoriteAsteroid.name} was added to the database.`,
@@ -142,6 +173,14 @@ app.get('/asteroids/:id', async (req, res) => {
         res.json({error: "Failed to fetch specific asteroid data." });
     }
 });
+
+mongoose.connect(process.env.MONGO_URL)
+    .then(() => {
+        console.log("Connected to MongoDB Freezer!");
+    })
+    .catch((err) => {
+        console.error("Failed to connect to MongoDB: ", err);
+    });
 
 app.listen(PORT, () => {
     console.log(`Server is orbiting on http://localhost:${PORT}'`);
