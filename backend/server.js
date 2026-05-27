@@ -25,24 +25,26 @@ app.get('/asteroids/favorites', async (req, res) => {
     }
 });
 
-app.put('/asteroids/favorites/:name', (req, res) => {
-    const asteroidName = req.params.name;
+app.patch('/asteroids/favorites/:name', async (req, res) => {
+    const { name } = req.params;
+    const { note } = req.body;
 
-    const note = req.body.note;
+    try {
+        const updatedAsteroid = await Asteroid.findOneAndUpdate(
+            { name: name },
+            { note: note },
+            { new: true }
+        );
 
-    const index = favoriteAsteroids.findIndex(asteroid => asteroid.name === asteroidName);
+        if (!updatedAsteroid) {
+            return res.status(404).json({ message: "Asteroid not found in database!"});
+        }
 
-    if (index === -1) {
-        return res.json({error: 'Asteroid not found in favorites list.'});
+        res.status(200).json(updatedAsteroid);
     }
-
-    favoriteAsteroids[index].note = note;
-
-    res.json({
-        message: `Successfully updated ${asteroidName}'s note.`,
-        updatedArray: favoriteAsteroids
-    });
-
+    catch (err) {
+        res.status(500).json({ message: "Failed to update asteroid note", error: err });
+    }
 });
 
 app.delete('/asteroids/favorites/:name', async (req, res) => {

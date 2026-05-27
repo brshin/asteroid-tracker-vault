@@ -9,6 +9,10 @@ const asteroidSchema = new mongoose.Schema({
     potentiallyHazardous: {
         type: Boolean,
         required: true
+    },
+    note: {
+        type: String,
+        default: ""
     }
 });
 

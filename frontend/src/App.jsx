@@ -86,6 +86,34 @@ function App() {
             
     };
 
+    const handleUpdateNote = (asteroidName, newNote) => {
+        fetch(`${API_BASE_URL}/asteroids/favorites/${asteroidName}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ note: newNote })
+        })
+        .then(async (res) => {
+            const data = await res.json();
+            if (!res.ok) {
+                throw new Error(data.message || "Could not save your note");
+            }
+            return data;
+        })
+        .then(updatedAsteroid => {
+            console.log("Database updated successfully:", updatedAsteroid);
+
+            setFavorites(prevFavorites => 
+                prevFavorites.map(ast => 
+                    ast.name === asteroidName ? updatedAsteroid : ast
+                )
+            );
+        })
+        .catch(err => {
+            console.error("Update failed:", err.message);
+            alert(`Error saving note: ${err.message}`);
+        });
+    };
+
     return (
         <div>
             <h1>Asteroid Dashboard</h1>
@@ -108,8 +136,21 @@ function App() {
             {favorites.map((asteroid) => (
                 <div key={asteroid.name}>
                     <h2>{asteroid.name}</h2>
+                    <p>Hazardous: {asteroid.potentiallyHazardous.toString()}</p>
+
+                    <p>Note: {asteroid.note || "No notes added yet."}</p>
+
+                    <button onClick={() => {
+                        const userNote = prompt("Enter a custom note for this asteroid:", asteroid.note || "");
+                        if (userNote !== null) {
+                            handleUpdateNote(asteroid.name, userNote);
+                        }
+                    }}>
+                        Edit Note
+                    </button>
+                    
                     <button onClick={() => handleRemoveAsteroid(asteroid.name)}>
-                        Remove
+                        Unfavorite
                     </button>
                 </div>
             ))}
