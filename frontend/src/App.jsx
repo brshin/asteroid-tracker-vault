@@ -136,8 +136,21 @@ function App() {
             {favorites.map((asteroid) => (
                 <div key={asteroid.name}>
                     <h2>{asteroid.name}</h2>
+                    <p>Hazardous: {asteroid.potentiallyHazardous.toString()}</p>
+
+                    <p>Note: {asteroid.note || "No notes added yet."}</p>
+
+                    <button onClick={() => {
+                        const userNote = prompt("Enter a custom note for this asteroid:", asteroid.note || "");
+                        if (userNote !== null) {
+                            handleUpdateNote(asteroid.name, userNote);
+                        }
+                    }}>
+                        Edit Note
+                    </button>
+                    
                     <button onClick={() => handleRemoveAsteroid(asteroid.name)}>
-                        Remove
+                        Unfavorite
                     </button>
                 </div>
             ))}
