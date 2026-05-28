@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -115,7 +116,19 @@ function App() {
     };
 
     return (
-        <div>
+        <header className="app-header">
+            <h1>Asteroid Tracker</h1>
+
+            <SignedOut>
+                <SignInButton mode="modal" />
+            </SignedOut>
+
+            <SignedIn>
+                <UserButton />
+            </SignedIn>
+        </header>
+
+        /*<div>
             <h1>Asteroid Dashboard</h1>
 
             <h2>Today's Asteroids</h2>
@@ -155,7 +168,7 @@ function App() {
                 </div>
             ))}
 
-        </div>
+        </div>*/
     )
 
 }
