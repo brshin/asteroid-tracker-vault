@@ -116,19 +116,21 @@ function App() {
     };
 
     return (
-        <header className="app-header">
-            <h1>Asteroid Tracker</h1>
+        <div className="app-container">
+            <nav className="top-nav">
+                <h1>Asteroid Tracker</h1>
 
-            <SignedOut>
-                <SignInButton mode="modal" />
-            </SignedOut>
+                <div className="auth-controls">
+                    <SignedOut>
+                        <SignInButton mode="modal" />
+                    </SignedOut>
+                    <SignedIn>
+                        <UserButton />
+                    </SignedIn>
+                </div>
+            </nav>
 
-            <SignedIn>
-                <UserButton />
-            </SignedIn>
-        </header>
-
-        /*<div>
+            <main>
             <h1>Asteroid Dashboard</h1>
 
             <h2>Today's Asteroids</h2>
@@ -167,8 +169,9 @@ function App() {
                     </button>
                 </div>
             ))}
+            </main>
+        </div>    
 
-        </div>*/
     )
 
 }
