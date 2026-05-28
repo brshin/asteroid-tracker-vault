@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/clerk-react";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 function App() {
     const [asteroids, setAsteroids] = useState([]);
     const [favorites, setFavorites] = useState([]);
+
+    const { getToken } = useAuth();
 
     useEffect(() => {
         fetch(`${API_BASE_URL}/asteroids`)
@@ -35,11 +38,15 @@ function App() {
             });
     }, []);
 
-    const handleSaveAsteroid = (asteroid) => {
+    const handleSaveAsteroid = async (asteroid) => {
+        const token = await getToken();
+        console.log(token);
+
         fetch(`${API_BASE_URL}/asteroids/favorites`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
                 name: asteroid.name,
@@ -63,9 +70,14 @@ function App() {
         });
     };
 
-    const handleRemoveAsteroid = (asteroidName) => {
+    const handleRemoveAsteroid = async (asteroidName) => {
+        const token = await getToken();
+
         fetch(`${API_BASE_URL}/asteroids/favorites/${asteroidName}`, {
             method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
         })
         .then(async (res) => {
             const data = await res.json();
@@ -87,10 +99,14 @@ function App() {
             
     };
 
-    const handleUpdateNote = (asteroidName, newNote) => {
+    const handleUpdateNote = async (asteroidName, newNote) => {
+        const token = await getToken();
+
         fetch(`${API_BASE_URL}/asteroids/favorites/${asteroidName}`, {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    },
             body: JSON.stringify({ note: newNote })
         })
         .then(async (res) => {
