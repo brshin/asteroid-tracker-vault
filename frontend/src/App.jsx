@@ -19,7 +19,12 @@ function App() {
             })
             .catch(err => console.error("Network error:", err));
         
-        fetch(`${API_BASE_URL}/asteroids/favorites`)
+        fetch(`${API_BASE_URL}/asteroids/favorites`), {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        }
             .then(async (res) => {
                 const data = await res.json();
 

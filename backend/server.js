@@ -17,9 +17,12 @@ app.use(express.json());
 
 let favoriteAsteroids = [];
 
-app.get('/asteroids/favorites', async (req, res) => {
+app.get('/asteroids/favorites', ClerkExpressRequireAuth(), async (req, res) => {
     try {
-        const favorites = await Asteroid.find();
+        const loggedInUserId = req.auth.userId;
+
+        const favorites = await Asteroid.find({ userId: loggedInUserId });
+
         res.status(200).json(favorites);
     }
     catch (err) {
