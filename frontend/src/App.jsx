@@ -8,9 +8,14 @@ function App() {
     const [asteroids, setAsteroids] = useState([]);
     const [favorites, setFavorites] = useState([]);
 
-    const { getToken } = useAuth();
+    const { getToken, isLoaded, isSignedIn } = useAuth();
 
     useEffect(() => {
+
+        if (!isLoaded || !isSignedIn) {
+            return;
+        }
+
         fetch(`${API_BASE_URL}/asteroids`)
             .then(res => res.json())
             .then(data => {
@@ -18,30 +23,37 @@ function App() {
                 setAsteroids(data);
             })
             .catch(err => console.error("Network error:", err));
-        
-        fetch(`${API_BASE_URL}/asteroids/favorites`), {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        }
-            .then(async (res) => {
-                const data = await res.json();
 
-                if (!res.ok) {
-                    throw new Error(data.message || "Failed to fetch favorites");
+        
+        const fetchUserFavorites = async () => {
+            const token = await getToken();
+            fetch(`${API_BASE_URL}/asteroids/favorites`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
                 }
-                return data;
             })
-            .then(data => {
-                console.log("Data from backend (favorites):", data);
-                setFavorites(data);
-            })
-            .catch(err => {
-                console.error("Network error:", err);
-                alert(err.message);
-            });
-    }, []);
+                .then(async (res) => {
+                    const data = await res.json();
+    
+                    if (!res.ok) {
+                        throw new Error(data.message || "Failed to fetch favorites");
+                    }
+                    return data;
+                })
+                .then(data => {
+                    console.log("Data from backend (favorites):", data);
+                    setFavorites(data);
+                })
+                .catch(err => {
+                    console.error("Network error:", err);
+                    alert(err.message);
+                });
+        }
+
+        fetchUserFavorites();
+        
+    }, [isLoaded, isSignedIn, getToken]);
 
     const handleSaveAsteroid = async (asteroid) => {
         const token = await getToken();
