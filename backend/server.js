@@ -5,6 +5,8 @@ const cors = require('cors');
 
 const mongoose = require('mongoose');
 
+const { ClerkExpressRequireAuth } = require('@clerk/clerk-sdk-node');
+
 const Asteroid = require('./models/Asteroid');
 
 const app = express();
@@ -15,9 +17,12 @@ app.use(express.json());
 
 let favoriteAsteroids = [];
 
-app.get('/asteroids/favorites', async (req, res) => {
+app.get('/asteroids/favorites', ClerkExpressRequireAuth(), async (req, res) => {
     try {
-        const favorites = await Asteroid.find();
+        const loggedInUserId = req.auth.userId;
+
+        const favorites = await Asteroid.find({ userId: loggedInUserId });
+
         res.status(200).json(favorites);
     }
     catch (err) {
@@ -25,13 +30,15 @@ app.get('/asteroids/favorites', async (req, res) => {
     }
 });
 
-app.patch('/asteroids/favorites/:name', async (req, res) => {
+app.patch('/asteroids/favorites/:name', ClerkExpressRequireAuth(), async (req, res) => {
     const { name } = req.params;
     const { note } = req.body;
 
     try {
+        const loggedInUserId = req.auth.userId;
+
         const updatedAsteroid = await Asteroid.findOneAndUpdate(
-            { name: name },
+            { name: name, userId: loggedInUserId },
             { note: note },
             { new: true }
         );
@@ -47,11 +54,13 @@ app.patch('/asteroids/favorites/:name', async (req, res) => {
     }
 });
 
-app.delete('/asteroids/favorites/:name', async (req, res) => {
+app.delete('/asteroids/favorites/:name', ClerkExpressRequireAuth(), async (req, res) => {
     const { name } = req.params;
 
     try {
-        const result = await Asteroid.deleteOne({ name: name});
+        const loggedInUserId = req.auth.userId;
+
+        const result = await Asteroid.deleteOne({ name: name, userId: loggedInUserId});
 
         if (result.deletedCount === 0) {
             return res.status(404).json({ message: "Asteroid not found in your database!" });
@@ -64,7 +73,7 @@ app.delete('/asteroids/favorites/:name', async (req, res) => {
     }
 });
 
-app.post('/asteroids/favorites', async (req, res) => {
+app.post('/asteroids/favorites', ClerkExpressRequireAuth(), async (req, res) => {
     const { name, potentiallyHazardous } = req.body;
 
     if (!name) {
@@ -72,9 +81,12 @@ app.post('/asteroids/favorites', async (req, res) => {
     }
 
     try {
+        const loggedInUserId = req.auth.userId;
+
         const newFavorite = new Asteroid({
              name: name,
-             potentiallyHazardous: potentiallyHazardous
+             potentiallyHazardous: potentiallyHazardous,
+             userId: loggedInUserId
             });
 
         await newFavorite.save();
@@ -87,13 +99,6 @@ app.post('/asteroids/favorites', async (req, res) => {
         }
         res.status(500).json({ message: "Error saving to database", error: err});
     }
-
-    //favoriteAsteroids.push(favoriteAsteroid);
-
-    res.json({
-        message: `${favoriteAsteroid.name} was added to the database.`,
-        updatedArray: favoriteAsteroids
-    });
 });
 
 app.get('/', (req, res) => {
