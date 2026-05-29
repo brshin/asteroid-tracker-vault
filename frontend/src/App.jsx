@@ -155,54 +155,56 @@ function App() {
 
                 <div className="auth-controls">
                     <SignedOut>
+                        <h2>Welcome to Asteroid Tracker</h2>
+                        <p>Please sign in above to view and manage your favorite space rocks.</p>
                         <SignInButton mode="modal" />
                     </SignedOut>
                     <SignedIn>
                         <UserButton />
+                        <main>
+                            <h1>Asteroid Dashboard</h1>
+
+                            <h2>Today's Asteroids</h2>
+
+                            {asteroids.map((asteroid) => (
+                                <div key={asteroid.name}>
+                                    <h2>{asteroid.name}</h2>
+                                    <p>Hazardous: {asteroid.potentiallyHazardous.toString()}</p>
+
+                                    <button onClick={() => handleSaveAsteroid(asteroid)}>
+                                        Favorite
+                                    </button>
+                                </div>
+                            ))}
+
+                            <h2>My Favorite Asteroids</h2>
+
+                            {favorites.map((asteroid) => (
+                                <div key={asteroid.name}>
+                                    <h2>{asteroid.name}</h2>
+                                    <p>Hazardous: {asteroid.potentiallyHazardous.toString()}</p>
+
+                                    <p>Note: {asteroid.note || "No notes added yet."}</p>
+
+                                    <button onClick={() => {
+                                        const userNote = prompt("Enter a custom note for this asteroid:", asteroid.note || "");
+                                        if (userNote !== null) {
+                                            handleUpdateNote(asteroid.name, userNote);
+                                        }
+                                    }}>
+                                        Edit Note
+                                    </button>
+                                    
+                                    <button onClick={() => handleRemoveAsteroid(asteroid.name)}>
+                                        Unfavorite
+                                    </button>
+                                </div>
+                            ))}
+                        </main>
                     </SignedIn>
                 </div>
             </nav>
 
-            <main>
-            <h1>Asteroid Dashboard</h1>
-
-            <h2>Today's Asteroids</h2>
-
-            {asteroids.map((asteroid) => (
-                <div key={asteroid.name}>
-                    <h2>{asteroid.name}</h2>
-                    <p>Hazardous: {asteroid.potentiallyHazardous.toString()}</p>
-
-                    <button onClick={() => handleSaveAsteroid(asteroid)}>
-                        Favorite
-                    </button>
-                </div>
-            ))}
-
-            <h2>My Favorite Asteroids</h2>
-
-            {favorites.map((asteroid) => (
-                <div key={asteroid.name}>
-                    <h2>{asteroid.name}</h2>
-                    <p>Hazardous: {asteroid.potentiallyHazardous.toString()}</p>
-
-                    <p>Note: {asteroid.note || "No notes added yet."}</p>
-
-                    <button onClick={() => {
-                        const userNote = prompt("Enter a custom note for this asteroid:", asteroid.note || "");
-                        if (userNote !== null) {
-                            handleUpdateNote(asteroid.name, userNote);
-                        }
-                    }}>
-                        Edit Note
-                    </button>
-                    
-                    <button onClick={() => handleRemoveAsteroid(asteroid.name)}>
-                        Unfavorite
-                    </button>
-                </div>
-            ))}
-            </main>
         </div>    
 
     )
