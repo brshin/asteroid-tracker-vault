@@ -13,7 +13,8 @@ const asteroidSchema = new mongoose.Schema({
     note: {
         type: String,
         default: ""
-    }
+    },
+    userId: { type: String, required: true}
 });
 
 module.exports = mongoose.model('Asteroid', asteroidSchema);

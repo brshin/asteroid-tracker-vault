@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/clerk-react";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -6,7 +8,14 @@ function App() {
     const [asteroids, setAsteroids] = useState([]);
     const [favorites, setFavorites] = useState([]);
 
+    const { getToken, isLoaded, isSignedIn } = useAuth();
+
     useEffect(() => {
+
+        if (!isLoaded || !isSignedIn) {
+            return;
+        }
+
         fetch(`${API_BASE_URL}/asteroids`)
             .then(res => res.json())
             .then(data => {
@@ -14,31 +23,47 @@ function App() {
                 setAsteroids(data);
             })
             .catch(err => console.error("Network error:", err));
+
         
-        fetch(`${API_BASE_URL}/asteroids/favorites`)
-            .then(async (res) => {
-                const data = await res.json();
-
-                if (!res.ok) {
-                    throw new Error(data.message || "Failed to fetch favorites");
+        const fetchUserFavorites = async () => {
+            const token = await getToken();
+            fetch(`${API_BASE_URL}/asteroids/favorites`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
                 }
-                return data;
             })
-            .then(data => {
-                console.log("Data from backend (favorites):", data);
-                setFavorites(data);
-            })
-            .catch(err => {
-                console.error("Network error:", err);
-                alert(err.message);
-            });
-    }, []);
+                .then(async (res) => {
+                    const data = await res.json();
+    
+                    if (!res.ok) {
+                        throw new Error(data.message || "Failed to fetch favorites");
+                    }
+                    return data;
+                })
+                .then(data => {
+                    console.log("Data from backend (favorites):", data);
+                    setFavorites(data);
+                })
+                .catch(err => {
+                    console.error("Network error:", err);
+                    alert(err.message);
+                });
+        }
 
-    const handleSaveAsteroid = (asteroid) => {
+        fetchUserFavorites();
+        
+    }, [isLoaded, isSignedIn, getToken]);
+
+    const handleSaveAsteroid = async (asteroid) => {
+        const token = await getToken();
+        console.log(token);
+
         fetch(`${API_BASE_URL}/asteroids/favorites`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
                 name: asteroid.name,
@@ -62,9 +87,14 @@ function App() {
         });
     };
 
-    const handleRemoveAsteroid = (asteroidName) => {
+    const handleRemoveAsteroid = async (asteroidName) => {
+        const token = await getToken();
+
         fetch(`${API_BASE_URL}/asteroids/favorites/${asteroidName}`, {
             method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
         })
         .then(async (res) => {
             const data = await res.json();
@@ -86,10 +116,14 @@ function App() {
             
     };
 
-    const handleUpdateNote = (asteroidName, newNote) => {
+    const handleUpdateNote = async (asteroidName, newNote) => {
+        const token = await getToken();
+
         fetch(`${API_BASE_URL}/asteroids/favorites/${asteroidName}`, {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    },
             body: JSON.stringify({ note: newNote })
         })
         .then(async (res) => {
@@ -115,47 +149,64 @@ function App() {
     };
 
     return (
-        <div>
-            <h1>Asteroid Dashboard</h1>
+        <div className="app-container">
+            <nav className="top-nav">
+                <h1>Asteroid Tracker</h1>
 
-            <h2>Today's Asteroids</h2>
+                <div className="auth-controls">
+                    <SignedOut>
+                        <h2>Welcome to Asteroid Tracker</h2>
+                        <p>Please sign in above to view and manage your favorite space rocks.</p>
+                        <SignInButton mode="modal" />
+                    </SignedOut>
+                    <SignedIn>
+                        <UserButton />
+                        <main>
+                            <h1>Asteroid Dashboard</h1>
 
-            {asteroids.map((asteroid) => (
-                <div key={asteroid.name}>
-                    <h2>{asteroid.name}</h2>
-                    <p>Hazardous: {asteroid.potentiallyHazardous.toString()}</p>
+                            <h2>Today's Asteroids</h2>
 
-                    <button onClick={() => handleSaveAsteroid(asteroid)}>
-                        Favorite
-                    </button>
+                            {asteroids.map((asteroid) => (
+                                <div key={asteroid.name}>
+                                    <h2>{asteroid.name}</h2>
+                                    <p>Hazardous: {asteroid.potentiallyHazardous.toString()}</p>
+
+                                    <button onClick={() => handleSaveAsteroid(asteroid)}>
+                                        Favorite
+                                    </button>
+                                </div>
+                            ))}
+
+                            <h2>My Favorite Asteroids</h2>
+
+                            {favorites.map((asteroid) => (
+                                <div key={asteroid.name}>
+                                    <h2>{asteroid.name}</h2>
+                                    <p>Hazardous: {asteroid.potentiallyHazardous.toString()}</p>
+
+                                    <p>Note: {asteroid.note || "No notes added yet."}</p>
+
+                                    <button onClick={() => {
+                                        const userNote = prompt("Enter a custom note for this asteroid:", asteroid.note || "");
+                                        if (userNote !== null) {
+                                            handleUpdateNote(asteroid.name, userNote);
+                                        }
+                                    }}>
+                                        Edit Note
+                                    </button>
+                                    
+                                    <button onClick={() => handleRemoveAsteroid(asteroid.name)}>
+                                        Unfavorite
+                                    </button>
+                                </div>
+                            ))}
+                        </main>
+                    </SignedIn>
                 </div>
-            ))}
+            </nav>
 
-            <h2>My Favorite Asteroids</h2>
+        </div>    
 
-            {favorites.map((asteroid) => (
-                <div key={asteroid.name}>
-                    <h2>{asteroid.name}</h2>
-                    <p>Hazardous: {asteroid.potentiallyHazardous.toString()}</p>
-
-                    <p>Note: {asteroid.note || "No notes added yet."}</p>
-
-                    <button onClick={() => {
-                        const userNote = prompt("Enter a custom note for this asteroid:", asteroid.note || "");
-                        if (userNote !== null) {
-                            handleUpdateNote(asteroid.name, userNote);
-                        }
-                    }}>
-                        Edit Note
-                    </button>
-                    
-                    <button onClick={() => handleRemoveAsteroid(asteroid.name)}>
-                        Unfavorite
-                    </button>
-                </div>
-            ))}
-
-        </div>
     )
 
 }
