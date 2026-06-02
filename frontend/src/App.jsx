@@ -178,7 +178,19 @@ function App() {
                 <main className="max-w-7xl mx-auto p-8">
 
                     <div className="mb-12">
-                        <h2 className="text-3xl font-bold border-b border-gray-700 pb-2 mb-6">Today's Asteroids</h2>
+
+                        <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-gray-700 pb-2 mb-6">
+                            <div>
+                                <h2 className="text-3xl font-bold">Today's Asteroids</h2>
+                                <p className="text-gray-400 text-sm mt-1">
+                                    {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                </p>
+                            </div>
+
+                            <div className="mt-2 md:mt-0 text-xs font-bold text-gray-500 uppercase tracking-widest">
+                                Source: <span className="text-blue-400">NASA NeoWs API</span>
+                            </div>
+                        </div>
 
                         {/* Grid */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
