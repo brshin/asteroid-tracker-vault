@@ -205,30 +205,57 @@ function App() {
                         </div>
                     </div>
 
-                    <div>
+                    <div className="mt-16">
                         <h2 className="text-3xl font-bold border-b border-gray-700 pb-2 mb-6">My Favorite Asteroids</h2>
-                        {favorites.map((asteroid) => (
-                            <div key={asteroid.name}>
-                                <h2>{asteroid.name}</h2>
-                                <p>Hazardous: {asteroid.potentiallyHazardous.toString()}</p>
 
-                                <p>Note: {asteroid.note || "No notes added yet."}</p>
-
-                                <button onClick={() => {
-                                    const userNote = prompt("Enter a custom note for this asteroid:", asteroid.note || "");
-                                    if (userNote !== null) {
-                                        handleUpdateNote(asteroid.name, userNote);
-                                    }
-                                }}>
-                                    Edit Note
-                                </button>
-                                
-                                <button onClick={() => handleRemoveAsteroid(asteroid.name)}>
-                                    Unfavorite
-                                </button>
+                        {favorites.length === 0 ? (
+                            <div className="text-center py-16 bg-[#161619] rounded-xl border border-dashed border-gray-700 text-gray-500">
+                                <p className="text-lg">Your vault is empty. Go favorite some space rocks above!</p>
                             </div>
-                        ))}
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                                {favorites.map((asteroid) => (
+                                    <div key={asteroid.name} className="bg-[#161619] border border-gray-800 rounded-xl p-6 flex flex-col items-center text-center transition-transform hover:-translate-y-2 hover:shadow-2xl hover:border-gray-600">
+
+                                        <img src="/asteroid.svg" alt="Asteroid" className="w-16 h-16 mb-4 opacity-90 drop-shadow-[0_0_12px_rgba(74,78,105,0.6)]" />
+                                        
+                                        <h3 className="text-xl font-bold mb-2">{asteroid.name}</h3>
+
+                                        <p className={`font-semibold mb-4 px-3 py-1 rounded-full text-xs ${asteroid.potentiallyHazardous ? "bg-red-900/30 text-red-400" : "bg-green-900/30 text-green-400"}`}>
+                                            {asteroid.potentiallyHazardous ? "⚠️ Hazardous" : "✅ Safe"}
+                                        </p>
+
+                                        <div className="w-full bg-[#0f0f11] rounded-lg p-3 mb-6 text-sm text-gray-300 text-left flex-grow border border-gray-800 shadow-inner">
+                                            <span className="text-gray-500 text-[10px] font-bold uppercase tracking-wider block mb-1">Commander's Log:</span>
+                                            <span className="italic">{asteroid.note || "No notes added yet."}</span>
+                                        </div>
+
+                                        <div className="flex gap-2 w-full mt-auto">
+                                            <button 
+                                                onClick={() => {
+                                                    const userNote = prompt("Enter a custom note for this asteroid:", asteroid.note || "");
+                                                    if (userNote !== null) {
+                                                        handleUpdateNote(asteroid.name, userNote);
+                                                    }
+                                                }}
+                                                className="flex-1 py-2 bg-blue-900/20 text-blue-400 border border-blue-800/50 hover:bg-blue-600 hover:text-white rounded-lg font-bold text-sm transition-all"    
+                                            >
+                                                ✍️ Edit
+                                            </button>
+                                            
+                                            <button 
+                                                onClick={() => handleRemoveAsteroid(asteroid.name)}
+                                                className="flex-1 py-2 bg-red-900/20 text-red-400 border border-red-800/50 hover:bg-red-600 hover:text-white rounded-lg font-bold text-sm transition-all"
+                                            >
+                                                🗑️ Drop
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
+
                 </main>
             </SignedIn>
 
