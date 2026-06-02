@@ -5,7 +5,7 @@
 A full-stack, secure web application that allows users to explore near-Earth asteroids via NASA's NeoWs API and curate a private, personalized vault of their favorites.
 
 ## The Tech Stack
-* **Frontend:** React (Client-Side Rendered), Vite
+* **Frontend:** React (Client-Side Rendered), Vite, Tailwind CSS (v4)
 * **Backend:** Node.js, Express (RESTful API Architecture)
 * **Database:** MongoDB Atlas (Cloud NoSQL)
 * **Authentication:** Clerk (Identity Provider & JWT Auth)
